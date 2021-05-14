@@ -49,6 +49,11 @@ pipeline {
         /*
          * Parameters about the project to run ORT on.
          */
+        string(
+            name: 'ORT_DOCKER_IMAGE',
+            description: 'DockerHub image for ORT',
+            defaultValue: ''
+        )
 
         string(
             name: 'PROJECT_VCS_URL',
@@ -167,13 +172,13 @@ pipeline {
         }
 
         /*
-         * This is a "dummy" stage to build the Docker image explicitly (if needed) so that the time for building the
+         * This is a "dummy" stage to fetch the Docker image explicitly (if needed) so that the time for fetching the
          * image is not included in other stages.
          */
-        stage('Build ORT Docker image') {
+        stage('Fetch ORT Docker image') {
             agent {
-                dockerfile {
-                    additionalBuildArgs DOCKER_BUILD_ARGS
+                docker {
+                    image ORT_DOCKER_IMAGE
                     args DOCKER_RUN_ARGS
                 }
             }
@@ -195,8 +200,8 @@ pipeline {
 
         stage('Clone project') {
             agent {
-                dockerfile {
-                    additionalBuildArgs DOCKER_BUILD_ARGS
+                docker {
+                    image ORT_DOCKER_IMAGE
                     args DOCKER_RUN_ARGS
                 }
             }
@@ -230,8 +235,8 @@ pipeline {
 
         stage('Clone ORT configuration') {
             agent {
-                dockerfile {
-                    additionalBuildArgs DOCKER_BUILD_ARGS
+                docker {
+                    image ORT_DOCKER_IMAGE
                     args DOCKER_RUN_ARGS
                 }
             }
@@ -273,8 +278,8 @@ pipeline {
 
         stage('Run ORT analyzer') {
             agent {
-                dockerfile {
-                    additionalBuildArgs DOCKER_BUILD_ARGS
+                docker {
+                    image ORT_DOCKER_IMAGE
                     args DOCKER_RUN_ARGS
                 }
             }
@@ -347,8 +352,8 @@ pipeline {
             }
 
             agent {
-                dockerfile {
-                    additionalBuildArgs DOCKER_BUILD_ARGS
+                docker {
+                    image ORT_DOCKER_IMAGE
                     args DOCKER_RUN_ARGS
                 }
             }
@@ -398,8 +403,8 @@ pipeline {
             }
 
             agent {
-                dockerfile {
-                    additionalBuildArgs DOCKER_BUILD_ARGS
+                docker {
+                    image ORT_DOCKER_IMAGE
                     args DOCKER_RUN_ARGS
                 }
             }
@@ -447,8 +452,8 @@ pipeline {
             }
 
             agent {
-                dockerfile {
-                    additionalBuildArgs DOCKER_BUILD_ARGS
+                docker {
+                    image ORT_DOCKER_IMAGE
                     args DOCKER_RUN_ARGS
                 }
             }
