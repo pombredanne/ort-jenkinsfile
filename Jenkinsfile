@@ -94,6 +94,24 @@ pipeline {
             description: 'Optional Jenkins credentials id to use for VCS checkout',
             defaultValue: ''
         )
+        
+        string(
+            name: 'ORT_SCANNER_STORAGE_VCS_URL',
+            description: 'Optional VCS clone URL of the ORT scanner storage',
+            defaultValue: ''
+        )
+
+        string(
+            name: 'ORT_SCANNER_STORAGE_VCS_REVISION',
+            description: 'Optional VCS revision of the ORT scanner storage (prefix Git tags with "refs/tags/")',
+            defaultValue: ''
+        )
+
+        credentials(
+            name: 'ORT_SCANNER_STORAGE_VCS_CREDENTIALS',
+            description: 'Optional Jenkins credentials id to use for VCS checkout',
+            defaultValue: ''
+        )
 
         choice(
             name: 'LOG_LEVEL',
@@ -269,6 +287,49 @@ pipeline {
 
                         rm -fr $ORT_DATA_DIR/config
                         /opt/ort/bin/ort $LOG_LEVEL $STACKTRACE_OPTION download --project-url $ORT_CONFIG_VCS_URL $VCS_REVISION_OPTION -o $ORT_DATA_DIR/config
+
+                        rm -f $HOME/.netrc
+                    '''
+                }
+            }
+        }
+
+        stage('Clone ORT scanner results') {
+            agent {
+                docker {
+                    image ORT_DOCKER_IMAGE
+                    args DOCKER_RUN_ARGS
+                }
+            }
+
+            when {
+                beforeAgent true
+
+                expression {
+                    !params.ORT_SCANNER_STORAGE_VCS_URL.allWhitespace
+                }
+            }
+
+            environment {
+                HOME = "${env.WORKSPACE}@tmp"
+                ORT_DATA_DIR = "${env.HOME}/.ort"
+            }
+
+            steps {
+                withCredentials(ortConfigVcsCredentials) {
+                    sh '''
+                        echo "default login $LOGIN password $PASSWORD" > $HOME/.netrc
+
+                        if [ "$STACKTRACE" = "true" ]; then
+                            STACKTRACE_OPTION="--stacktrace"
+                        fi
+
+                        if [ -n "$ORT_SCANNER_STORAGE_VCS_REVISION" ]; then
+                            VCS_REVISION_OPTION="--vcs-revision $ORT_SCANNER_STORAGE_VCS_REVISION"
+                        fi
+
+                        rm -fr $ORT_DATA_DIR/scanner
+                        /opt/ort/bin/ort $LOG_LEVEL $STACKTRACE_OPTION download --project-url $ORT_CONFIG_SCANNER_STORAGE_URL $VCS_REVISION_OPTION -o $ORT_DATA_DIR/scanner
 
                         rm -f $HOME/.netrc
                     '''
