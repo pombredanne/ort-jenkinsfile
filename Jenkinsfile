@@ -329,7 +329,7 @@ pipeline {
                         fi
 
                         rm -fr $ORT_DATA_DIR/scanner
-                        /opt/ort/bin/ort $LOG_LEVEL $STACKTRACE_OPTION download --project-url $ORT_CONFIG_SCANNER_STORAGE_URL $VCS_REVISION_OPTION -o $ORT_DATA_DIR/scanner
+                        /opt/ort/bin/ort $LOG_LEVEL $STACKTRACE_OPTION download --project-url $ORT_SCANNER_STORAGE_URL $VCS_REVISION_OPTION -o $ORT_DATA_DIR/scanner
 
                         rm -f $HOME/.netrc
                     '''
