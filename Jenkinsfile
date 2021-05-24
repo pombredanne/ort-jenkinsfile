@@ -461,7 +461,8 @@ pipeline {
                         sh '''
                             echo "default login $LOGIN password $PASSWORD" > $HOME/.netrc
                             cd $ORT_DATA_DIR/scanner
-                            git commit -a -m "add scan results from jenkins" 
+                            git add .
+                            git commit -m "add scan results from jenkins" 
                             git push
 
                             rm -f $HOME/.netrc
