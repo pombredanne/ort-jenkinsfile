@@ -41,6 +41,7 @@ static sortProjectsByPathDepth(projects) {
 
 def projectVcsCredentials = []
 def ortConfigVcsCredentials = []
+def ortScannerStorageVcsCredentials = []
 
 pipeline {
     agent none
@@ -185,6 +186,10 @@ pipeline {
                     if (!params.ORT_CONFIG_VCS_CREDENTIALS.allWhitespace) {
                         ortConfigVcsCredentials += usernamePassword(credentialsId: params.ORT_CONFIG_VCS_CREDENTIALS, usernameVariable: 'LOGIN', passwordVariable: 'PASSWORD')
                     }
+
+                    if (!params.ORT_SCANNER_STORAGE_VCS_CREDENTIALS.allWhitespace) {
+                        ortScannerStorageVcsCredentials += usernamePassword(credentialsId: params.ORT_SCANNER_STORAGE_VCS_CREDENTIALS, usernameVariable: 'LOGIN', passwordVariable: 'PASSWORD')
+                    }
                 }
             }
         }
@@ -316,7 +321,7 @@ pipeline {
             }
 
             steps {
-                withCredentials(ortConfigVcsCredentials) {
+                withCredentials(ortScannerStorageVcsCredentials) {
                     sh '''
                         echo "default login $LOGIN password $PASSWORD" > $HOME/.netrc
 
@@ -421,6 +426,7 @@ pipeline {
 
             environment {
                 HOME = "${env.WORKSPACE}@tmp"
+                ORT_DATA_DIR = "${env.HOME}/.ort"
             }
 
             steps {
@@ -450,6 +456,17 @@ pipeline {
                         artifacts: 'out/results/scanner/*',
                         fingerprint: true
                     )
+
+                    withCredentials(ortScannerStorageVcsCredentials) {
+                        sh '''
+                            echo "default login $LOGIN password $PASSWORD" > $HOME/.netrc
+                            cd $ORT_DATA_DIR/scanner
+                            git commit -a -m "add scan results from jenkins" 
+                            git push
+
+                            rm -f $HOME/.netrc
+                        '''
+                    }
                 }
             }
         }
